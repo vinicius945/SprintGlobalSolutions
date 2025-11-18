@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="#{app.test.title} + ' - ' + #{app.title}">Teste de Mensageiria - Gestão LTAKN</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <link rel="icon" type="image/png" th:href="@{/images/ltakn-logo.png}">
+    <style>
+        .page-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .content-wrapper {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 0;
+        }
+    </style>
+</head>
+<body class="page-container">
+<div th:replace="layout :: mainHeader"></div>
+
+<div class="content-wrapper">
+    <div class="container mt-4">
+        <div class="text-center mb-4">
+            <img th:src="@{/images/ltakn-logo.png}" th:alt="#{app.logo.alt}" style="max-width: 200px; height: auto;">
+        </div>
+
+        <h2 class="text-center mb-4" th:text="#{app.test.title}">Teste de Mensageiria com RabbitMQ</h2>
+
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" th:aria-label="#{aria.close}"></button>
+        </div>
+
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" th:aria-label="#{aria.close}"></button>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0" th:text="#{test.cache.header}">Teste de Sincronização de Cache</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text" th:text="#{test.cache.desc}">Envia mensagens para invalidar cache de departamentos e funcionários. Verifique os logs para ver o processamento assíncrono.</p>
+                        <form th:action="@{/teste-mensageiria/cache-sync}" method="post">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <button type="submit" class="btn btn-primary w-100" th:text="#{test.cache.button}">Testar Sincronização de Cache</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0" th:text="#{test.report.header}">Teste de Relatório Assíncrono</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text" th:text="#{test.report.desc}">Solicita um relatório de funcionários em risco. O processamento ocorre em background e simula envio por email.</p>
+                        <form th:action="@{/teste-mensageiria/relatorio}" method="post">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <button type="submit" class="btn btn-warning w-100" th:text="#{test.report.button}">Testar Relatório Assíncrono</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0" th:text="#{rabbit.status.header}">Status do RabbitMQ</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 th:text="#{rabbit.connection} + ':'">Conexão:</h6>
+                        <ul class="list-unstyled">
+                            <li th:text="#{rabbit.host} + ': '">Host: <code>localhost:5672</code></li>
+                            <li th:text="#{rabbit.user} + ': '">Usuário: <code>guest</code></li>
+                            <li><a th:href="@{http://localhost:15672}" target="_blank" th:text="#{rabbit.webInterface}">http://localhost:15672</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 th:text="#{rabbit.queues.header} + ':'">Filas Configuradas:</h6>
+                        <ul>
+                            <li><code>cache.sync.queue</code> - <span th:text="#{queue.cache}">Sincronização de cache</span></li>
+                            <li><code>relatorio.queue</code> - <span th:text="#{queue.report}">Processamento de relatórios</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0" th:text="#{howto.header}">Como Verificar se Está Funcionando</h5>
+            </div>
+            <div class="card-body">
+                <ol>
+                    <li><strong th:text="#{howto.step1.title}">Console da Aplicação:</strong> <span th:text="#{howto.step1}">Veja os logs quando testar as funcionalidades</span></li>
+                    <li><strong th:text="#{howto.step2.title}">Interface do RabbitMQ:</strong> <a th:href="@{http://localhost:15672}" target="_blank" th:text="#{howto.step2}">http://localhost:15672</a></li>
+                    <li><strong th:text="#{howto.step3.title}">Credenciais:</strong> <span th:text="#{howto.step3}">usuário guest, senha guest</span></li>
+                    <li><strong th:text="#{howto.step4.title}">Verifique as filas:</strong> <span th:text="#{howto.step4}">Na aba "Queues" você deve ver as 2 filas criadas</span></li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="layout :: mainFooter"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
