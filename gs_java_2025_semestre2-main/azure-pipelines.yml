@@ -8,11 +8,25 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  # Nome da conexão de serviço que vamos criar no Azure DevOps
+  # Nome da conexão de serviço
   azureSubscription: 'AzureSubscription'
-
-  # Nome do Web App que JÁ EXISTE no Azure (criado pelo seu script manual)
+  
+  # Nome do Web App
   webAppName: 'webapp-ltakn-2025-vini'
+
+  # --- VARIÁVEIS DE AMBIENTE PARA OS TESTES (MAPEAMENTO SEGURO) ---
+  # Aqui nós pegamos as variáveis configuradas na UI do Azure DevOps (Variables)
+  # e passamos para o ambiente do Pipeline.
+  SPRING_DATASOURCE_URL: $(DB_URL)
+  SPRING_DATASOURCE_USERNAME: $(DB_USER)
+  SPRING_DATASOURCE_PASSWORD: $(DB_PASS)
+  
+  SPRING_RABBITMQ_HOST: $(RABBIT_HOST)
+  SPRING_RABBITMQ_USERNAME: $(RABBIT_USER)
+  SPRING_RABBITMQ_PASSWORD: $(RABBIT_PASS)
+  SPRING_RABBITMQ_VIRTUAL_HOST: $(RABBIT_VHOST)
+  
+  GROQ_API_KEY: $(AI_KEY)
 
 stages:
   # --- Estágio 1: Build & Testes ---
@@ -29,11 +43,11 @@ stages:
               jdkArchitectureOption: 'x64'
               jdkSourceOption: 'PreInstalled'
 
-          # 2. Compilar e Rodar Testes (Obrigatório publicar testes!)
+          # 2. Compilar e Rodar Testes (Agora com credenciais seguras!)
           - task: Maven@3
             displayName: 'Maven Package & Test'
             inputs:
-              mavenPomFile: 'gs_java_2025_semestre2-main/pom.xml' # Ajuste para o nome da pasta que ver no Repos
+              mavenPomFile: 'gs_java_2025_semestre2-main/pom.xml' 
               mavenOptions: '-Xmx3072m'
               javaHomeOption: 'JDKVersion'
               jdkVersionOption: '1.17'
@@ -42,7 +56,7 @@ stages:
               testResultsFiles: '**/surefire-reports/TEST-*.xml'
               goals: 'package'
 
-          # 3. Copiar o JAR para a área de upload
+          # 3. Copiar o JAR gerado
           - task: CopyFiles@2
             displayName: 'Copy JAR to artifact staging'
             inputs:
@@ -50,7 +64,7 @@ stages:
               Contents: '**/target/*.jar'
               TargetFolder: '$(build.artifactstagingdirectory)'
 
-          # 4. Publicar o Artefato (Drop) para a próxima fase
+          # 4. Publicar o Artefato (Drop)
           - task: PublishBuildArtifacts@1
             displayName: 'Publish Artifact'
             inputs:
@@ -58,7 +72,7 @@ stages:
               ArtifactName: 'drop'
               publishLocation: 'Container'
 
-  # --- Estágio 2: Deploy (Atualizar o Site) ---
+  # --- Estágio 2: Deploy (Release) ---
   - stage: Deploy
     displayName: Deploy Stage
     dependsOn: Build
@@ -75,7 +89,7 @@ stages:
               artifactName: 'drop'
               downloadPath: '$(System.ArtifactsDirectory)'
 
-          # 6. Deploy no Web App Linux (Java Nativo)
+          # 6. Deploy no Web App
           - task: AzureWebApp@1
             displayName: 'Deploy JAR to Azure Web App'
             inputs:
