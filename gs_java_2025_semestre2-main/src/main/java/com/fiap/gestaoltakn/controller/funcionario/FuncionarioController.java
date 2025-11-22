@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.fiap.gestaoltakn.ai.service.LarenAIService;
 
 import java.util.concurrent.TimeUnit;
 
@@ -22,14 +23,14 @@ public class FuncionarioController {
 
     private final FuncionarioService funcionarioService;
     private final DepartamentoService departamentoService;
-    private final AIService aiService;
+    private final LarenAIService larenService; // <--- Novo
 
     public FuncionarioController(FuncionarioService funcionarioService,
                                  DepartamentoService departamentoService,
-                                 AIService aiService) {
+                                 LarenAIService larenService) { // <--- Injeta o novo
         this.funcionarioService = funcionarioService;
         this.departamentoService = departamentoService;
-        this.aiService = aiService;
+        this.larenService = larenService;
     }
 
     @GetMapping
@@ -57,10 +58,11 @@ public class FuncionarioController {
     public ResponseEntity<String> obterAnaliseIA(@PathVariable Long id) {
         try {
             FuncionarioEntity funcionario = funcionarioService.buscarPorId(id);
-            String analise = aiService.analisarBemEstarFuncionario(funcionario);
+            // Chama o novo serviço
+            String analise = larenService.analisarFuncionario(funcionario);
             return ResponseEntity.ok(analise);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Erro ao gerar análise: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Erro: " + e.getMessage());
         }
     }
 

@@ -81,6 +81,13 @@
                            th:href="@{'/funcionarios/' + ${func.id} + '/editar'}"
                            sec:authorize="hasRole('ADMIN')" th:text="#{employee.edit}">Editar</a>
 
+                        <button class="btn btn-sm btn-info text-white me-1"
+                                th:data-id="${func.id}"
+                                th:data-nome="${func.nome}"
+                                onclick="abrirChatLaren(this.getAttribute('data-id'), this.getAttribute('data-nome'))">
+                            🤖 Laren
+                        </button>
+
                         <form th:action="@{'/funcionarios/' + ${func.id} + '/deletar'}"
                               method="post" style="display:inline;"
                               sec:authorize="hasRole('ADMIN')">
@@ -148,6 +155,26 @@
     </div>
 </div>
 
+<div class="modal fade" id="chatLarenModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    🤖 Chat com Laren <small style="font-size: 0.8rem; opacity: 0.8;">(IA de Bem-Estar)</small>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="chatBox" class="chat-box">
+                </div>
+            </div>
+            <div class="modal-footer bg-light">
+                <small class="text-muted w-100 text-center">A Laren analisa dados para sugerir melhorias.</small>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div th:replace="~{layout :: mainFooter}"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -155,6 +182,7 @@
 <script>
     console.log('Bootstrap carregado:', typeof bootstrap !== 'undefined');
 
+    // Função para testar conexão geral (Resumo Equipe)
     function testarConexaoIA() {
         const resultadoDiv = document.getElementById('testeIAResultado');
         resultadoDiv.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"></div> ' + 'Testando conexão com IA...';
@@ -175,6 +203,7 @@
             });
     }
 
+    // Função para gerar resumo da equipe
     function gerarResumoIA() {
         const modalElement = document.getElementById('resumoModal');
         if (!modalElement) {
@@ -214,33 +243,80 @@
             })
             .catch(error => {
                 loading.classList.add('d-none');
-
                 const totalFuncionarios = document.querySelectorAll('tbody tr').length;
                 const emRisco = document.querySelectorAll('.badge.bg-danger').length;
                 const saudaveis = document.querySelectorAll('.badge.bg-success').length;
 
-                resultado.textContent = `**Resumo da Equipe - Análise de Bem-Estar**\n\n` +
+                resultado.textContent = `**Resumo da Equipe - Análise de Bem-Estar (Mock)**\n\n` +
                     `**Situação Atual:**\n` +
                     `- Total de funcionários: ${totalFuncionarios}\n` +
                     `- Em situação saudável: ${saudaveis}\n` +
-                    `- Em situação de risco: ${emRisco}\n` +
-                    `- Taxa de risco: ${totalFuncionarios > 0 ? ((emRisco * 100.0 / totalFuncionarios).toFixed(1)) : 0}%\n\n` +
-                    `**Recomendações Prioritárias:**\n` +
-                    `1. Monitorar continuamente a carga de trabalho\n` +
-                    `2. Implementar políticas de descanso obrigatório\n` +
-                    `3. Realizar check-ins regulares sobre bem-estar\n` +
-                    `4. Oferecer suporte psicológico preventivo\n\n` +
-                    `**Ações Sugeridas:**\n` +
-                    `- Revisar distribuição de tarefas\n` +
-                    `- Promover pausas regulares\n` +
-                    `- Capacitar gestores em saúde mental no trabalho`;
+                    `- Em situação de risco: ${emRisco}\n\n` +
+                    `*Nota: O serviço de IA parece estar indisponível no momento.*`;
 
                 conteudo.classList.remove('d-none');
             });
     }
 
-    console.log('testarConexaoIA disponível:', typeof testarConexaoIA);
-    console.log('gerarResumoIA disponível:', typeof gerarResumoIA);
+    // --- NOVA FUNÇÃO: Chatbot Laren ---
+    function abrirChatLaren(id, nome) {
+        // 1. Abre o Modal
+        const modal = new bootstrap.Modal(document.getElementById('chatLarenModal'));
+        modal.show();
+
+        // 2. Limpa o chat antigo e mostra saudação
+        const chatBox = document.getElementById('chatBox');
+        chatBox.innerHTML = `
+            <div class="message laren">
+                <div class="avatar">🤖 Laren</div>
+                <div class="bubble">
+                    Olá! Sou a Laren. Vou analisar os dados de <strong>${nome}</strong> agora mesmo. Só um momento...
+                </div>
+            </div>
+            <div class="typing-indicator" id="typing">
+                <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+            </div>
+        `;
+
+        // 3. Chama o Backend Java (que chama o Python)
+        fetch(`/api/funcionarios/${id}/analise-ia`)
+            .then(response => {
+                if (!response.ok) throw new Error('Erro na conexão');
+                return response.text();
+            })
+            .then(textoResposta => {
+                // Remove animação de "digitando"
+                const typing = document.getElementById('typing');
+                if(typing) typing.remove();
+
+                // Adiciona a resposta da IA formatada
+                // (Transforma quebras de linha em <br> para ficar bonito)
+                const textoFormatado = textoResposta.replace(/\n/g, '<br>');
+
+                chatBox.innerHTML += `
+                    <div class="message laren animate-in">
+                        <div class="avatar">🤖 Laren</div>
+                        <div class="bubble">${textoFormatado}</div>
+                    </div>
+                `;
+
+                // Rola para baixo
+                chatBox.scrollTop = chatBox.scrollHeight;
+            })
+            .catch(error => {
+                const typing = document.getElementById('typing');
+                if(typing) typing.remove();
+
+                chatBox.innerHTML += `
+                    <div class="message laren">
+                        <div class="bubble text-danger">
+                            Ops! Tive um problema ao conectar com minha consciência (API Python).<br>
+                            Verifique se o servidor <code>app.py</code> está rodando.
+                        </div>
+                    </div>
+                `;
+            });
+    }
 </script>
 
 </body>
