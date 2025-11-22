@@ -1,6 +1,3 @@
-# Pipeline de Build e Deploy para Java Spring Boot (PaaS)
-# Global Solution 2025 - DevOps Tools & Cloud Computing
-
 trigger:
   - main
 
@@ -10,8 +7,6 @@ pool:
 variables:
   azureSubscription: 'AzureSubscription'
   webAppName: 'webapp-ltakn-2025-vini'
-  # Referenciando as variáveis secretas que você criou na UI
-  # (Elas precisam ser mapeadas explicitamente no env da task abaixo)
 
 stages:
   - stage: Build
@@ -26,7 +21,7 @@ stages:
               jdkArchitectureOption: 'x64'
               jdkSourceOption: 'PreInstalled'
 
-          # --- AQUI ESTÁ A CORREÇÃO ---
+
           - task: Maven@3
             displayName: 'Maven Package & Test'
             inputs:
@@ -38,7 +33,7 @@ stages:
               publishJUnitResults: true
               testResultsFiles: '**/surefire-reports/TEST-*.xml'
               goals: 'package'
-            # Este bloco ENV injeta as senhas secretas dentro do processo do Maven
+
             env:
               SPRING_DATASOURCE_URL: $(DB_URL)
               SPRING_DATASOURCE_USERNAME: $(DB_USER)
