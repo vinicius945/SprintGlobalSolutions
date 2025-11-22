@@ -1,0 +1,86 @@
+# Pipeline de Build e Deploy para Java Spring Boot (PaaS)
+# Global Solution 2025 - DevOps Tools & Cloud Computing
+
+trigger:
+  - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  # Nome da conexão de serviço que vamos criar no Azure DevOps
+  azureSubscription: 'AzureSubscription'
+
+  # Nome do Web App que JÁ EXISTE no Azure (criado pelo seu script manual)
+  webAppName: 'webapp-ltakn-2025-vini'
+
+stages:
+  # --- Estágio 1: Build & Testes ---
+  - stage: Build
+    displayName: Build Stage
+    jobs:
+      - job: Build
+        displayName: Build Java App
+        steps:
+          # 1. Configurar Java 17
+          - task: JavaToolInstaller@0
+            inputs:
+              versionSpec: '17'
+              jdkArchitectureOption: 'x64'
+              jdkSourceOption: 'PreInstalled'
+
+          # 2. Compilar e Rodar Testes (Obrigatório publicar testes!)
+          - task: Maven@3
+            displayName: 'Maven Package & Test'
+            inputs:
+              mavenPomFile: 'pom.xml'
+              mavenOptions: '-Xmx3072m'
+              javaHomeOption: 'JDKVersion'
+              jdkVersionOption: '1.17'
+              jdkArchitectureOption: 'x64'
+              publishJUnitResults: true
+              testResultsFiles: '**/surefire-reports/TEST-*.xml'
+              goals: 'package'
+
+          # 3. Copiar o JAR para a área de upload
+          - task: CopyFiles@2
+            displayName: 'Copy JAR to artifact staging'
+            inputs:
+              SourceFolder: '$(system.defaultworkingdirectory)'
+              Contents: '**/target/*.jar'
+              TargetFolder: '$(build.artifactstagingdirectory)'
+
+          # 4. Publicar o Artefato (Drop) para a próxima fase
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish Artifact'
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+              ArtifactName: 'drop'
+              publishLocation: 'Container'
+
+  # --- Estágio 2: Deploy (Atualizar o Site) ---
+  - stage: Deploy
+    displayName: Deploy Stage
+    dependsOn: Build
+    condition: succeeded()
+    jobs:
+      - job: Deploy
+        displayName: Deploy to Azure Web App
+        steps:
+          # 5. Baixar o Artefato
+          - task: DownloadBuildArtifacts@0
+            inputs:
+              buildType: 'current'
+              downloadType: 'single'
+              artifactName: 'drop'
+              downloadPath: '$(System.ArtifactsDirectory)'
+
+          # 6. Deploy no Web App Linux (Java Nativo)
+          - task: AzureWebApp@1
+            displayName: 'Deploy JAR to Azure Web App'
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              appType: 'webAppLinux'
+              appName: '$(webAppName)'
+              package: '$(System.ArtifactsDirectory)/drop/**/target/*.jar'
+              runtimeStack: 'JAVA|17-java17'

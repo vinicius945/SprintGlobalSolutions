@@ -1,5 +1,4 @@
 -- Script de Criação do Banco de Dados - Global Solution 2025
--- Baseado nas Entidades JPA do projeto LTAKN
 
 -- Tabela de Usuários (Login)
 CREATE TABLE GS_TB_USER (
@@ -23,7 +22,7 @@ CREATE TABLE GS_TB_FUNCIONARIO (
     horas_trabalhadas_ultimo_mes INT NOT NULL,
     status VARCHAR(50) NOT NULL CHECK (status IN ('SAUDAVEL', 'EM_RISCO')),
     departamento_id BIGINT NOT NULL,
-    CONSTRAINT FK_FUNCIONARIO_DEPARTAMENTO FOREIGN KEY (departamento_id) 
+    CONSTRAINT FK_FUNCIONARIO_DEPARTAMENTO FOREIGN KEY (departamento_id)
     REFERENCES GS_TB_DEPARTAMENTO(id)
 );
 
