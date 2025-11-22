@@ -1,32 +1,30 @@
+# ---------------------------------------------------------
+# Estágio 1: Build (Compilação)
+# Usa uma imagem Maven com Java 17 para gerar o .jar
+# ---------------------------------------------------------
 FROM maven:3.9.4-eclipse-temurin-17 AS build
-
-ARG SPRING_DATASOURCE_URL
-ARG SPRING_DATASOURCE_USERNAME
-ARG SPRING_DATASOURCE_PASSWORD
-ARG SPRING_RABBITMQ_HOST
-ARG SPRING_RABBITMQ_USERNAME
-ARG SPRING_RABBITMQ_PASSWORD
-ARG SPRING_RABBITMQ_VIRTUAL_HOST
-ARG GROQ_API_KEY
-ARG GROQ_API_URL
-
-ENV SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
-ENV SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
-ENV SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
-ENV SPRING_RABBITMQ_HOST=${SPRING_RABBITMQ_HOST}
-ENV SPRING_RABBITMQ_USERNAME=${SPRING_RABBITMQ_USERNAME}
-ENV SPRING_RABBITMQ_PASSWORD=${SPRING_RABBITMQ_PASSWORD}
-ENV SPRING_RABBITMQ_VIRTUAL_HOST=${SPRING_RABBITMQ_VIRTUAL_HOST}
-ENV GROQ_API_KEY=${GROQ_API_KEY}
-ENV GROQ_API_URL=${GROQ_API_URL}
-
 WORKDIR /app
-COPY pom.xml .
-COPY src ./src
-RUN mvn -B -U clean package
 
+# Copia o pom.xml e baixa dependências (cache layer)
+COPY pom.xml .
+RUN mvn dependency:go-offline
+
+# Copia o código fonte e compila (pula testes para agilizar o build do container)
+COPY src ./src
+RUN mvn -B -U clean package -DskipTests
+
+# ---------------------------------------------------------
+# Estágio 2: Runtime (Execução)
+# Usa uma imagem leve apenas com o JRE para rodar a aplicação
+# ---------------------------------------------------------
 FROM eclipse-temurin:17-jre
 WORKDIR /app
+
+# Copia apenas o artefato (JAR) gerado no estágio anterior
 COPY --from=build /app/target/*.jar ./app.jar
+
+# Documenta que a aplicação usa a porta 8080
 EXPOSE 8080
-ENTRYPOINT ["java","-jar","/app/app.jar"]
+
+# Comando para iniciar a aplicação
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
