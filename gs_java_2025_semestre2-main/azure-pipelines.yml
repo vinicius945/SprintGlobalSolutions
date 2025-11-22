@@ -33,7 +33,7 @@ stages:
           - task: Maven@3
             displayName: 'Maven Package & Test'
             inputs:
-              mavenPomFile: 'pom.xml'
+              mavenPomFile: 'gs_java_2025_semestre2-main/pom.xml' # Ajuste para o nome da pasta que ver no Repos
               mavenOptions: '-Xmx3072m'
               javaHomeOption: 'JDKVersion'
               jdkVersionOption: '1.17'
