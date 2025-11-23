@@ -6,10 +6,10 @@
 # --- 1. Variáveis de Configuração ---
 RG="rg-gsfinal"
 LOCATION="eastus2"                 # Região do seu SQL existente
-SQL_SERVER="sqlserver-gsfinal-945" # Seu servidor existente
-SQL_DB="sqldb-gsfinal"             # Seu banco existente
-SQL_ADMIN="adminGSFINAL"           # Seu usuário
-SQL_PASS="GsFinal@2025"            # Sua senha (Cuidado: em prod real usaríamos KeyVault)
+SQL_SERVER="sqlservers+user" # Seu servidor existente
+SQL_DB="SQLADMIN"             # Seu banco existente
+SQL_ADMIN="UserAdmin"           # Seu usuário
+SQL_PASS="KeyVault"            # Sua senha (Cuidado: em prod real usaríamos KeyVault)
 
 PLAN_NAME="plan-gs-java-paas"
 APP_NAME="webapp-ltakn-2025-vini"  # Nome do seu Web App
