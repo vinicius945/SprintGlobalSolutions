@@ -35,7 +35,7 @@ Este projeto segue rigorosamente a arquitetura **PaaS (Platform as a Service)**,
 
 ## 🗺️ 2. Desenho da Arquitetura
 
-
+![img.png](img.png)
 
 **Fluxo DevOps:**
 1.  **Code:** Commit no Azure Repos (Branch `main`).
