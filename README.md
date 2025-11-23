@@ -6,16 +6,16 @@
 * **Lucas Resende Lima** - RM 556564
 * **Enzo Prado Soddano** - RM 557937
 
----
+----
 
 ## 🔗 Links de Entrega
 
 * **Aplicação (Azure Web App):** [https://webapp-ltakn-2025-vini.azurewebsites.net](https://webapp-ltakn-2025-vini.azurewebsites.net)
 * **Azure DevOps (Projeto):** [https://dev.azure.com/RM5591830661/GS_2025_LTAKN](https://dev.azure.com/RM5591830661/GS_2025_LTAKN)
-* **Vídeo de Demonstração (YouTube):** []
+* **Vídeo de Demonstração (YouTube):** [https://youtu.be/dM10UAcbEFk]
 * **Repositório (GitHub):** [https://github.com/vinicius945/SprintGlobalSolutions.git]
 
----
+----
 
 ## 📌 1. Descrição da Solução
 
@@ -31,7 +31,7 @@ Este projeto segue rigorosamente a arquitetura **PaaS (Platform as a Service)**,
 * **CI/CD:** Azure Pipelines (YAML Multi-stage)
 * **Mensageria:** RabbitMQ (CloudAMQP)
 
----
+----
 
 ## 🗺️ 2. Desenho da Arquitetura
 
@@ -43,7 +43,7 @@ Este projeto segue rigorosamente a arquitetura **PaaS (Platform as a Service)**,
 3.  **CD (Release):** O Pipeline faz o deploy automático do artefato no Azure Web App.
 4.  **Monitoramento:** O Web App conecta-se ao Azure SQL e RabbitMQ via Variáveis de Ambiente seguras.
 
----
+----
 
 ## 📋 3. Exemplos de CRUD (JSON) - Requisito 15
 
