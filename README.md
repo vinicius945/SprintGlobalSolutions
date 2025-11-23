@@ -12,7 +12,7 @@
 
 * **Aplicação (Azure Web App):** [https://webapp-ltakn-2025-vini.azurewebsites.net](https://webapp-ltakn-2025-vini.azurewebsites.net)
 * **Azure DevOps (Projeto):** [https://dev.azure.com/RM5591830661/GS_2025_LTAKN](https://dev.azure.com/RM5591830661/GS_2025_LTAKN)
-* **Vídeo de Demonstração (YouTube):** []
+* **Vídeo de Demonstração (YouTube):** 
 * **Repositório (GitHub):** [https://github.com/vinicius945/SprintGlobalSolutions.git]
 
 ---
